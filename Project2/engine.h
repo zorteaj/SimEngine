@@ -4,6 +4,7 @@
 #include "glew.h"
 
 class Object;
+class ShaderMgr;
 
 class Engine
 {
@@ -23,7 +24,10 @@ private:
 	void setup_elements(GLuint elements[], int size);
 private:
 	SDL_Window* window_;
+	SDL_GLContext context_;
+	ShaderMgr* shader_mgr_;
 	bool quit_;
 	GLuint vertex_array_object_;
 	GLuint vertex_obj_buffer_;
+	GLuint elements_buffer_object_;
 };

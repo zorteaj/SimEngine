@@ -32,9 +32,6 @@ int main(int argc, char *argv[])
 	Object obj(vertices, sizeof(vertices), elements, sizeof(elements));
 	engine.add_object(obj);
 
-	ShaderMgr shader_mgr;
-	shader_mgr.create_shader();
-
 	while (!engine.quit())
 	{
 		engine.tick();

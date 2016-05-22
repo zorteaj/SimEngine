@@ -1,5 +1,7 @@
 #include "engine.h"
 
+#include "shader_mgr.h"
+
 #include "object.h"
 
 #include <iostream>
@@ -9,12 +11,12 @@ Engine::Engine()
 	setup_sdl();
 	create_window();
 	setup_opengl();
+	shader_mgr_ = ShaderMgr::instance();
 }
 
 Engine::~Engine()
 {
-	// TODO : Make context member if possible
-	//SDL_GL_DeleteContext(context);
+	SDL_GL_DeleteContext(context_);
 	glDeleteBuffers(1, &vertex_obj_buffer_);
 	glDeleteVertexArrays(1, &vertex_array_object_);
 	SDL_Quit();
@@ -24,6 +26,11 @@ Engine::~Engine()
 
 void Engine::tick()
 {
+	if (!shader_mgr_->ready())
+	{
+		shader_mgr_->init();
+	}
+
 	SDL_Event event;
 	while (!quit_)
 	{
@@ -63,8 +70,8 @@ void Engine::setup_sdl()
 
 void Engine::setup_opengl()
 {
-	SDL_GLContext context = SDL_GL_CreateContext(window_);
-	if (context == NULL) {
+	context_ = SDL_GL_CreateContext(window_);
+	if (context_ == NULL) {
 		std::cerr << "OpenGL context could not be created: " << SDL_GetError() << std::endl;
 	}
 
@@ -75,6 +82,9 @@ void Engine::setup_opengl()
 	{
 		std::cerr << "Glew failed to initialize: " << glewGetErrorString(glew_state) << std::endl;
 	}
+
+	glGenVertexArrays(1, &vertex_array_object_);
+	glBindVertexArray(vertex_array_object_);
 }
 
 void Engine::add_object(const Object& obj)
@@ -103,9 +113,6 @@ void Engine::setup_vertices_and_elements(const Object& obj)
 
 void Engine::setup_vertices(float vertices[], int size)
 {
-	glGenVertexArrays(1, &vertex_array_object_);
-	glBindVertexArray(vertex_array_object_);
-
 	glGenBuffers(1, &vertex_obj_buffer_);
 	glBindBuffer(GL_ARRAY_BUFFER, vertex_obj_buffer_);
 	glBufferData(GL_ARRAY_BUFFER, size, vertices, GL_STATIC_DRAW);
@@ -113,8 +120,7 @@ void Engine::setup_vertices(float vertices[], int size)
 
 void Engine::setup_elements(GLuint elements[], int size)
 {
-	GLuint elements_buffer_object;
-	glGenBuffers(1, &elements_buffer_object);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elements_buffer_object);
+	glGenBuffers(1, &elements_buffer_object_);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elements_buffer_object_);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, elements, GL_STATIC_DRAW);
 }
