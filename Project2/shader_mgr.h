@@ -9,6 +9,7 @@ public:
 	~ShaderMgr();
 	void init();
 	const bool& ready() const;
+	const GLuint& shaderProgram() const;
 private:
 	ShaderMgr();
 	void create_shader();

@@ -3,6 +3,8 @@
 #include "vertex_shader.h"
 #include "fragment_shader.h"
 
+#include "SOIL.h"
+
 #include <iostream>
 
 
@@ -49,6 +51,11 @@ void ShaderMgr::create_shader()
 	ready_ = true;
 }
 
+const GLuint& ShaderMgr::shaderProgram() const
+{
+	return shader_program_;
+}
+
 void ShaderMgr::create_vertex_shader()
 {
 	vertex_shader_ = glCreateShader(GL_VERTEX_SHADER);
@@ -77,12 +84,61 @@ void ShaderMgr::build_shader_program()
 void ShaderMgr::setup_attributes()
 {
 	GLint position_attribute = glGetAttribLocation(shader_program_, "position");
-	glVertexAttribPointer(position_attribute, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 5, 0);
+	glVertexAttribPointer(position_attribute, 2, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 7, 0);
 	glEnableVertexAttribArray(position_attribute);
 
 	GLint color_attribute = glGetAttribLocation(shader_program_, "color");
-	glVertexAttribPointer(color_attribute, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void*)(sizeof(float) * 2));
+	glVertexAttribPointer(color_attribute, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 7, (void*)(sizeof(GLfloat) * 2));
 	glEnableVertexAttribArray(color_attribute);
+
+	GLint texture_attribute = glGetAttribLocation(shader_program_, "texcoord");
+	glEnableVertexAttribArray(texture_attribute);
+	glVertexAttribPointer(texture_attribute, 2, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 7, (void*)(sizeof(GLfloat) * 5));
+
+
+
+	// TODO : Break this stuff out 
+	GLuint textures[2];
+	glGenTextures(2, textures);
+
+	int width, height;
+	unsigned char* image;
+
+	//------------------------------------------------------------------
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, textures[0]);
+	image = SOIL_load_image("siding.jpg", &width, &height, 0, SOIL_LOAD_RGB);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB,
+		GL_UNSIGNED_BYTE, image);
+	SOIL_free_image_data(image);
+	glUniform1i(glGetUniformLocation(shader_program_, "texFrog"), 0);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	//------------------------------------------------------------------
+
+
+	//------------------------------------------------------------------
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, textures[1]);
+	image = SOIL_load_image("frog.jpg", &width, &height, 0, SOIL_LOAD_RGB);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB,
+		GL_UNSIGNED_BYTE, image);
+	SOIL_free_image_data(image);
+	glUniform1i(glGetUniformLocation(shader_program_, "texFox"), 1);
+
+	// What to do when the texture image is smaller than the polygon onto which it's mapped (I think)
+	// We're clamping to edge
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	// Apply filtering (for when texture coordinates don't match a pixel perfectly)
+	// Linear is a weighted averaged of 4 surrounding pixels
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	//------------------------------------------------------------------
 }
 
 void ShaderMgr::check_for_errors()

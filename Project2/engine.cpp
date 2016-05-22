@@ -1,8 +1,11 @@
 #include "engine.h"
 
 #include "shader_mgr.h"
-
 #include "object.h"
+
+#include "glm.hpp"
+#include "gtc/matrix_transform.hpp"
+#include "gtc/type_ptr.hpp"
 
 #include <iostream>
 
@@ -44,6 +47,23 @@ void Engine::tick()
 
 		glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		glm::mat4 model;
+		model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		GLint uniform_transformation = glGetUniformLocation(shader_mgr_->shaderProgram(), "model");
+		glUniformMatrix4fv(uniform_transformation, 1, GL_FALSE, glm::value_ptr(model));
+
+		glm::mat4 view = glm::lookAt(
+			glm::vec3(1.2f, 1.2f, 1.2f),
+			glm::vec3(0.0f, 0.0f, 0.0f),
+			glm::vec3(0.0f, 0.0f, 1.0f)
+			);
+		GLuint uniform_view = glGetUniformLocation(shader_mgr_->shaderProgram(), "view");
+		glUniformMatrix4fv(uniform_view, 1, GL_FALSE, glm::value_ptr(view));
+
+		glm::mat4 proj = glm::perspective(glm::radians(45.0f), 640.0f / 480.0f, 1.0f, 10.0f);
+		GLuint uniform_projection = glGetUniformLocation(shader_mgr_->shaderProgram(), "proj");
+		glUniformMatrix4fv(uniform_projection, 1, GL_FALSE, glm::value_ptr(proj));
 
 		glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, 0);
 		SDL_GL_SwapWindow(window_);
