@@ -36,7 +36,7 @@ gl_Position = vec4(position, 0.0, 1.0);
 const GLchar* vertex_shader_string =
 "#version 150 core\n"
 
-"in vec2 position;"
+"in vec3 position;"
 "in vec3 color;"
 "in vec2 texcoord;"
 
@@ -51,5 +51,5 @@ const GLchar* vertex_shader_string =
 "{"
 "    Color = color;"
 "    Texcoord = texcoord;"
-"    gl_Position = proj * view * model * vec4(position, 0.0, 1.0);"
+"    gl_Position = proj * view * model * vec4(position, 1.0);"
 "}";

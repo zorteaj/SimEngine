@@ -38,5 +38,6 @@ const GLchar* fragment_shader_string =
 
 "void main()"
 "{"
-"    outColor = mix(texture(texFrog, Texcoord), texture(texFox, Texcoord), 0.85);"
+"	vec4 texColor = mix(texture(texFrog, Texcoord), texture(texFox, Texcoord), 0.85);"
+"	outColor = vec4(Color, 1.0) * texColor;"
 "}";

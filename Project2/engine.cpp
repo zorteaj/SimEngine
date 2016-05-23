@@ -49,7 +49,7 @@ void Engine::tick()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glm::mat4 model;
-		model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 		GLint uniform_transformation = glGetUniformLocation(shader_mgr_->shaderProgram(), "model");
 		glUniformMatrix4fv(uniform_transformation, 1, GL_FALSE, glm::value_ptr(model));
 
@@ -65,7 +65,8 @@ void Engine::tick()
 		GLuint uniform_projection = glGetUniformLocation(shader_mgr_->shaderProgram(), "proj");
 		glUniformMatrix4fv(uniform_projection, 1, GL_FALSE, glm::value_ptr(proj));
 
-		glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, 0);
+		//glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, 0);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
 		SDL_GL_SwapWindow(window_);
 	}
 }
