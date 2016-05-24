@@ -11,20 +11,6 @@
 // This color can be determined from the vertex color, texture coordintates, or whatever
 // other data coming from the vertex shader
 
-// Our program just makes every fragment white
-
-/*
-#version 150
-
-out vec4 outColor;
-
-void main()
-{
-// There's no special gl_* variable here, because we can output multiple colors
-outColor = vec4(1.0, 1.0, 1.0, 1.0);
-}
-*/
-
 const GLchar* fragment_shader_string =
 "#version 150 core\n"
 

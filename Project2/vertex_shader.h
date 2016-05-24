@@ -13,26 +13,6 @@
 // coordinates and to output any data the fragment shader requires.  That's why the 3D transformation
 // should take place here.
 
-// Since the vertex positions we're passing in are already specified in device coordinates, and no other
-// atrributes exist, this vertex shader is bare bones
-
-/*
-#version 150
-
-// our attribute
-// values in attributes are always floats
-// the number of the vector (2 in this case) specifies the number of components in the attribute
-in vec2 position;
-
-void main()
-{
-// this is a special variable. i'm not sure what they 3rd and 4th arguments are,
-// but the 4th needs to be 1.0 for some reason.  the rest are supposedly free to
-// be messed with
-gl_Position = vec4(position, 0.0, 1.0);
-}
-*/
-
 const GLchar* vertex_shader_string =
 "#version 150 core\n"
 
