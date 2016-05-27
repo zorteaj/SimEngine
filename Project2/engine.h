@@ -2,6 +2,7 @@
 
 #include "SDL.h"
 #include "glew.h"
+#include "glm.hpp"
 
 class Object;
 class ShaderMgr;
@@ -30,4 +31,6 @@ private:
 	GLuint vertex_array_object_;
 	GLuint vertex_obj_buffer_;
 	GLuint elements_buffer_object_;
+	glm::vec3* eye_;
+	glm::vec3* center_;
 };

@@ -18,6 +18,8 @@ Engine::Engine()
 	create_window();
 	setup_opengl();
 	shader_mgr_ = ShaderMgr::instance();
+	eye_ = new glm::vec3(0.0f, 2.0f, 0.0f);
+	center_ = new glm::vec3(0.0f, -2.0f, 0.0f);
 }
 
 Engine::~Engine()
@@ -42,10 +44,17 @@ void Engine::tick()
 		OBJ_ROLL,
 		CAM_PITCH,
 		CAM_YAW,
-		CAM_ROLL
+		CAM_ROLL, 
+		CAM_Y
 	} mode;
 
 	bool mouse_down = false;
+
+	bool w_down = false;
+	bool s_down = false;
+	bool a_down = false;
+	bool d_down = false;
+
 	int last_mouse_x;
 	int last_mouse_y;
 	float last_cam_pitch;
@@ -59,6 +68,7 @@ void Engine::tick()
 	mode_map[CAM_PITCH] = 0.0;
 	mode_map[CAM_YAW] = 0.0;
 	mode_map[CAM_ROLL] = 0.0;
+	mode_map[CAM_Y] = 2.0;
 
 	SDL_Event event;
 	while (!quit_)
@@ -67,7 +77,7 @@ void Engine::tick()
 		{
 			int mouse_x;
 			int mouse_y;
-			if (SDL_GetMouseState(&mouse_x, &mouse_y) & SDL_BUTTON(SDL_BUTTON_LEFT))
+			if (SDL_GetMouseState(&mouse_x, &mouse_y) & SDL_BUTTON(SDL_BUTTON_RIGHT))
 			{
 				if (!mouse_down) {
 					mouse_down = true;
@@ -75,8 +85,6 @@ void Engine::tick()
 					last_mouse_y = mouse_y;
 					last_cam_pitch = mode_map[CAM_PITCH];
 					last_cam_yaw = mode_map[CAM_YAW];
-					std::cout << "last down X: " << last_mouse_x << std::endl;
-					std::cout << "last down Y: " << last_mouse_y << std::endl;
 				}
 			}
 			else {
@@ -104,12 +112,47 @@ void Engine::tick()
 				case SDLK_r:
 					mode = CAM_ROLL;
 					break;
+				case SDLK_w:
+					w_down = true;
+					break;
+				case SDLK_s:
+					s_down = true;
+					break;
+				case SDLK_a:
+					a_down = true;
+					break;
+				case SDLK_d:
+					d_down = true;
+					break;
 				case SDLK_SPACE:
 					// TODO: Clean up this crap
 					mode_map[OBJ_ROLL] = 180.0;
 					mode_map[CAM_PITCH] = 0.0;
 					mode_map[CAM_YAW] = 0.0;
 					mode_map[CAM_ROLL] = 0.0;
+					mode_map[CAM_Y] = 2.0;
+					delete eye_;
+					eye_ = new glm::vec3(0.0f, 2.0f, 0.0f);
+					delete center_;
+					center_ = new glm::vec3(0.0f, 2.0f, 0.0f);
+					break;
+				default:
+					break;
+				}
+			}
+			else if (event.type == SDL_KEYUP) {
+				switch (event.key.keysym.sym) {
+				case SDLK_w:
+					w_down = false;
+					break;
+				case SDLK_s:
+					s_down = false;
+					break;
+				case SDLK_a:
+					a_down = false;
+					break;
+				case SDLK_d:
+					d_down = false;
 					break;
 				default:
 					break;
@@ -133,21 +176,25 @@ void Engine::tick()
 				{
 					mode_map[CAM_ROLL] = (int)(mode_map[CAM_ROLL] + event.wheel.y) % 360;
 				}
+				else if (mode == CAM_Y)
+				{
+					mode_map[CAM_Y] = mode_map[CAM_Y] + ((float)event.wheel.y / 5.0);
+				}
 			}
 			else if (event.type == SDL_MOUSEMOTION) {
-				if (event.motion.state & SDL_BUTTON(SDL_BUTTON_LEFT))
+				if (event.motion.state & SDL_BUTTON(SDL_BUTTON_RIGHT))
 				{
 
-					std::cout << last_mouse_y - event.motion.y << std::endl;
+					//std::cout << last_mouse_y - event.motion.y << std::endl;
 
-					mode_map[CAM_PITCH] = (last_cam_pitch + ((float)(last_mouse_y - event.motion.y)/10.0));
+					mode_map[CAM_PITCH] = (last_cam_pitch + ((float)(last_mouse_y - event.motion.y)/5.0));
 					if (mode_map[CAM_PITCH] > 90) {
 						mode_map[CAM_PITCH] = 90;
 					}
 					else if (mode_map[CAM_PITCH] < -90) {
 						mode_map[CAM_PITCH] = -90;
 					}
-					mode_map[CAM_YAW] = (last_cam_yaw + ((float)(event.motion.x - last_mouse_x)/10.0));
+					mode_map[CAM_YAW] = (last_cam_yaw + ((float)(event.motion.x - last_mouse_x)/5.0));
 					if (mode_map[CAM_YAW] > 90) {
 						mode_map[CAM_YAW] = 90;
 					}
@@ -186,22 +233,65 @@ void Engine::tick()
 
 
 
+		glm::vec3 move_vec = rot_vect_ * 0.007f;
+
+		//std::cout << "mvx: " << move_vec.x <<" mvy: " << move_vec.y << " mvz: " << move_vec.z << std::endl;
+
+		if (s_down) {
+			eye_->x += move_vec.x;
+			eye_->y += move_vec.y;
+			eye_->z -= move_vec.z;
+		}
+		else if (w_down) {
+			eye_->x += move_vec.x;
+			eye_->y -= move_vec.y;
+			eye_->z += move_vec.z;
+		}
+		else if (a_down) {
+			eye_->x += .001f;
+		}
+		else if (d_down) {
+			eye_->x -= .001f;
+		}
 
 
+		//std::cout << "ex: " << eye_->x <<" ey: " << eye_->y << " ez: " << eye_->z << std::endl;
+
+		glm::vec3 center(*eye_ + rot_vect_);
+		center.y *= -1;
+		glm::vec3 norm_center = glm::normalize(center); 
+		//std::cout << "cx: " << center.x <<" cy: " << center.y << " cz: " << center.z << std::endl;
+		//std::cout << "ncx: " << norm_center.x <<" ncy: " << norm_center.y << " ncz: " << norm_center.z << std::endl;
+
+		//glm::vec3 rot(0.0f, 0.5f, 0.5f);
+		//glm::vec3 eye = glm::vec3(0.0f, 2.0f, 0.5f);
+		////glm::vec3 center = glm::vec3(0.0f, 0.5f, 0.5f);
+		//glm::vec3 center = eye + rot;
+		//glm::vec3 center_n = glm::normalize(center);
 
 
+		//// eye, center, up
+		//glm::mat4 view = glm::lookAt(
+		//	eye,
+		//	center_n,
+		//	glm::vec3(0.0f, 0.0f, 1.0f)
+		//	);
 
 		// eye, center, up
 		glm::mat4 view = glm::lookAt(
-			glm::vec3(0.0f, 2.0f, 0.0f),
-			//glm::vec3(0.0f, 0.0f, mode_map[CAM_CENTER_Z]),
-			rot_vect_,
+			//glm::vec3(0.0f, mode_map[CAM_Y], 0.0f),
+			*eye_,
+			//*eye_ + rot_vect_,
+			center,
+			//glm::vec3(0.0f, -10.0f, 0.0f),
+			//rot_vect_,
+			//glm::vec3(0.0f, 1.5f, 0.0f),
 			glm::vec3(0.0f, 0.0f, 1.0f)
 			);
 		GLuint uniform_view = glGetUniformLocation(shader_mgr_->shaderProgram(), "view");
 		glUniformMatrix4fv(uniform_view, 1, GL_FALSE, glm::value_ptr(view));
 
-		glm::mat4 proj = glm::perspective(glm::radians(45.0f), 640.0f / 640.0f, 1.0f, 10.0f);
+		glm::mat4 proj = glm::perspective(glm::radians(45.0f), 640.0f / 640.0f, 0.1f, 100.0f);
 		GLuint uniform_projection = glGetUniformLocation(shader_mgr_->shaderProgram(), "proj");
 		glUniformMatrix4fv(uniform_projection, 1, GL_FALSE, glm::value_ptr(proj));
 
